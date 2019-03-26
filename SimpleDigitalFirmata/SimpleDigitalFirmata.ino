@@ -4,8 +4,8 @@
 
 SoftwareSerial mySerial(10, 11); // RX, TX
 
-int previous=0;
-byte send_data[]={2,48,48,48,48};
+int previous=0,i=0;
+byte send_data[]={1,48,48,48,48,59};
 
 
 void setPinModeCallback(byte pin, int mode) {
@@ -20,22 +20,16 @@ void analys_data(int value){
   for ( byte i = 0; i < 7; i=i+2) {
     check_bit = (byte) (value >> i) & 1;
     if(check_bit == 1){
-      if(i == 0){
-        send_data[4]= 49;
-      }
-      else send_data[(i/2)]= 49;
+      send_data[(i/2)+1]= 49;
     }
   }
   for ( byte i = 1; i < 8; i=i+2) {
     check_bit = (byte) (value >> i) & 1;
     if(check_bit == 1){
-      if(i == 1){
-        send_data[4]= 50;
-      }
-      send_data[(i-1)/2]= 50;
+      send_data[((i-1)/2)+1]= 50;
     }
   }
-  mySerial.write(send_data,5);
+  mySerial.write(send_data,6);
   for(byte i = 1; i < 5; i++){
     send_data[i]=48;
   }
@@ -46,8 +40,10 @@ void digitalWriteCallback(byte port, int value)
 
   if (value!= 0 && value!= 1 && value!= 2 && value!= 4 && value!= 8 && value!= 16 &&
       value!= 32 && value!= 64 && value!= 128 && value != previous) {
-//      analys_data(value);
+      analys_data(value);
+
       mySerial.write(value);
+
       previous = value;
     }
 }
@@ -60,6 +56,8 @@ void setup()
   Firmata.attach(SET_PIN_MODE, setPinModeCallback);
   Firmata.begin(57600);
   mySerial.begin(9600);
+  pinMode(7, OUTPUT);
+  digitalWrite(7,HIGH);
   
 }
 
